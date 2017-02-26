@@ -30,7 +30,7 @@ void config_detect_hw_revision(void) {
     // enable peripheral clock
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOE, ENABLE);
 
-    // init PE.10 as intput with PULLUP
+    // init PE.10 as input with PULLUP
     GPIO_InitTypeDef gpio_init;
     GPIO_StructInit(&gpio_init);
     gpio_init.GPIO_Pin   = GPIO_Pin_10;

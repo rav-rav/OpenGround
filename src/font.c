@@ -21,7 +21,7 @@
 
 // include fonts here and add an extern definition to font.h
 // DO NOT include them elsewhere
-#include "fonts/system5x7.h"
-#include "fonts/tomthumb3x5.h"
-#include "fonts/metric15x26.h"
-#include "fonts/metric7x12.h"
+#include "../fonts/system5x7.h"
+#include "../fonts/tomthumb3x5.h"
+#include "../fonts/metric15x26.h"
+#include "../fonts/metric7x12.h"

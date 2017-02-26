@@ -1,6 +1,6 @@
 # object files
 SYSTEM_SRCS   = system_stm32f0xx.c
-DRIVER_SRCS   = stm32f0xx_gpio.c stm32f0xx_rcc.c stm32f0xx_adc.c stm32f0xx_dma.c stm32f0xx_tim.c stm32f0xx_i2c.c 
+DRIVER_SRCS   = stm32f0xx_gpio.c stm32f0xx_rcc.c stm32f0xx_adc.c stm32f0xx_dma.c stm32f0xx_tim.c stm32f0xx_i2c.c stm32f0xx_usart.c 
 DRIVER_SRCS  += stm32f0xx_exti.c stm32f0xx_syscfg.c stm32f0xx_misc.c stm32f0xx_spi.c stm32f0xx_iwdg.c stm32f0xx_flash.c
 EXTERNAL_SRCS = st_eeprom.c
 BOARD_SRCS    = $(GENERIC_SRCS)
@@ -12,7 +12,7 @@ DFU_UTIL ?= dfu-util
 
 
 #crystal frequency
-CRYSTAL_FREQ = 12000000
+CRYSTAL_FREQ = 8000000
 
 #name of executable
 RESULT ?= openground
@@ -118,7 +118,7 @@ size: $(RESULT).elf
 	@echo
 
 clean:
-	rm -f src/*.o src/*.d *.o *.d $(RESULT).elf $(RESULT).bin
+	rm -f peripheral_lib/eeprom_emulation/src/*.o peripheral_lib/eeprom_emulation/src/*.d peripheral_lib/src/*.o peripheral_lib/src/*.d device/*.o device/*.d src/*.o src/*.d *.o *.d $(RESULT).elf $(RESULT).bin
 
 debug: $(RESULT).elf
 	openocd -f /usr/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/share/openocd/scripts/target/stm32f1x.cfg & echo $$! > $(OPENOCD_PIDFILE)
