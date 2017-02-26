@@ -47,8 +47,8 @@ void storage_init(void) {
     }
 
     // for debugging
-    // storage_load_defaults();
-    // storage_save();
+    storage_load_defaults();
+    storage_save();
 
     debug("storage: loaded hoptable[]:\n");
     for (i = 0; i < 9; i++) {

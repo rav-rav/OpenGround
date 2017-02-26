@@ -150,17 +150,22 @@ void USART_SendDataBlocking(USART_TypeDef* USARTx, uint16_t data) {
 #define MULTI_CHANS 16
 #define MULTI_CHAN_BITS 11
 
+static int opti = -40;
+
 void multi_send_packet() {
-    uint8_t sub_protocol = 15;  // FrskyX
-    bool bind = false;
+    uint8_t sub_protocol = 3;  // FrskyX
+    bool bind = true;
     bool rangeCheck = false;
     bool autoBind = false;
 
-    uint8_t rxNum = 0;  // CH_8
+    uint8_t rxNum = 0;
     uint8_t type = 1;  // CH_8
     bool lowPower = false;
 
-    int8_t option_protocol = 0;
+    uint8_t option_protocol = opti >= 0 ? opti : opti + 256;
+    opti++;
+    if (opti > 40)
+        opti = -40;
 
     uint8_t data;
 
