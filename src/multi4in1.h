@@ -25,6 +25,7 @@
 #include "main.h"
 
 void multi4in1_init(void);
+void multi4in1_init_usart(void);
 void multi4in1_init_timer(void);
 void TIM3_IRQHandler(void);
 
