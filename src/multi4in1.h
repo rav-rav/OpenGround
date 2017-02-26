@@ -28,6 +28,7 @@ void multi4in1_init(void);
 void multi4in1_init_usart(void);
 void multi4in1_init_timer(void);
 void TIM3_IRQHandler(void);
+void multi_send_packet(void);
 
 
 #endif  // MULTI4IN1_H_
