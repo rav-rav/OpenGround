@@ -28,10 +28,7 @@
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_usart.h"
 
-static int16_t counter = 0;
-
-static inline int constrain(int amt, int low, int high)
-{
+static inline int constrain(int amt, int low, int high) {
     if (amt < low)
         return low;
     else if (amt > high)
@@ -39,7 +36,6 @@ static inline int constrain(int amt, int low, int high)
     else
         return amt;
 }
-
 
 void multi4in1_init(void) {
     debug("multi4in1: init usart\n");
@@ -71,18 +67,19 @@ void multi4in1_init_usart(void) {
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    //enable alternate function 1: usart
+    // enable alternate function 1: usart
     GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_0);
     GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_0);
 
-    //set baudrate
+    // set baudrate
     USART_StructInit(&USART_InitStructure);
     USART_InitStructure.USART_BaudRate = 100000;
+    USART_InitStructure.USART_WordLength = USART_WordLength_9b; // required because of parity bit
     USART_InitStructure.USART_Parity = USART_Parity_Even;
     USART_InitStructure.USART_StopBits = USART_StopBits_2;
     USART_Init(USART3, &USART_InitStructure);
 
-    //enable usart
+    // enable usart
     USART_Cmd(USART3, ENABLE);
 }
 
@@ -135,74 +132,79 @@ void TIM3_IRQHandler(void) {
     if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 
-        //USART_SendData(USART3, 'A');
-        /*counter++;
-        counter = counter > 255 ? 0 : counter;
-        USART_SendData(USART3, counter);
-        */
         multi_send_packet();
-        // Wait until transmit finishes
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {
-
-        }
 
         TIM_SetAutoreload(TIM3, 9000 - 1);
     }
 }
 
 void USART_SendDataBlocking(USART_TypeDef* USARTx, uint16_t data) {
-    USART_SendData(USARTx, data);
-    while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET) {
-
+    while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET) {  // tx buffer empty
     }
+    USART_SendData(USARTx, data);
+    // USART_FLAG_TC transmission complete
 }
 
-//based on https://github.com/opentx/opentx/blob/next/radio/src/pulses/multi_arm.cpp
-//based on https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
+// based on https://github.com/opentx/opentx/blob/next/radio/src/pulses/multi_arm.cpp
+// based on https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
 #define MULTI_CHANS 16
 #define MULTI_CHAN_BITS 11
 
 void multi_send_packet() {
-    uint8_t sub_protocol = 15; //FrskyX
+    uint8_t sub_protocol = 15;  // FrskyX
     bool bind = false;
     bool rangeCheck = false;
     bool autoBind = false;
 
-    uint8_t rxNum = 0; //CH_8
-    uint8_t type = 1; //CH_8
+    uint8_t rxNum = 0;  // CH_8
+    uint8_t type = 1;  // CH_8
     bool lowPower = false;
 
     int8_t option_protocol = 0;
 
     uint8_t data;
 
-    //header
+    // header
+    debug("0: ");
     if (sub_protocol < 32) {
         USART_SendDataBlocking(USART3, 0x55);
+        debug_put_hex8(0x55);
     } else {
         USART_SendDataBlocking(USART3, 0x54);
+        debug_put_hex8(0x54);
     }
+    debug_put_newline();
 
-    //Stream[1] = sub_protocol|RangeCheckBit|AutoBindBit|BindBit;
+    // Stream[1] = sub_protocol|RangeCheckBit|AutoBindBit|BindBit;
     data = sub_protocol & 0x1f;
     data |= rangeCheck << 5;
     data |= autoBind << 6;
     data |= bind << 7;
     USART_SendDataBlocking(USART3, data);
+    debug("1: ");
+    debug_put_hex8(data);
+    debug_put_newline();
 
-    //Stream[2] = RxNum | Type | Power;
+    // Stream[2] = RxNum | Type | Power;
     data = rxNum & 0x0f;
     data |= (type & 0x07) << 4;
     data |= lowPower << 7;
     USART_SendDataBlocking(USART3, data);
+    debug("2: ");
+    debug_put_hex8(data);
+    debug_put_newline();
 
-    //Stream[3] = option_protocol;
+    // Stream[3] = option_protocol;
     USART_SendDataBlocking(USART3, option_protocol);
+    debug("3: ");
+    debug_put_hex8(option_protocol);
+    debug_put_newline();
 
-    //Stream[4] to [25] = Channels
+    // Stream[4] to [25] = Channels
     uint32_t bits = 0;
     uint8_t bitsavailable = 0;
 
+    int cnt = 4;
     for (int i = 0; i < MULTI_CHANS; i++) {
         int channel = i;
         int value = 42;
@@ -212,6 +214,13 @@ void multi_send_packet() {
         bitsavailable += MULTI_CHAN_BITS;
         while (bitsavailable >= 8) {
             USART_SendDataBlocking(USART3, (uint8_t)(bits & 0xff));
+            cnt++;
+            if (cnt < 11) {
+                debug_put_int8(cnt);
+                debug(": ");
+                debug_put_hex8((uint8_t)(bits & 0xff));
+                debug_put_newline();
+            }
             bits >>= 8;
             bitsavailable -= 8;
         }
