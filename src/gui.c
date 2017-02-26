@@ -257,7 +257,7 @@ static void gui_cb_config_model(void) {
 
 static void gui_cb_setup_clonetx(void) {
     // disable tx code
-    frsky_tx_set_enabled(0);
+    // frsky_tx_set_enabled(0);
     gui_page = GUI_PAGE_SETUP_CLONETX;
 }
 
@@ -267,7 +267,7 @@ static void gui_cb_setup_bind(void) {
 
 static void gui_cb_setup_bootloader(void) {
     // disable tx code
-    frsky_tx_set_enabled(0);
+    // frsky_tx_set_enabled(0);
     gui_page = GUI_PAGE_SETUP_BOOTLOADER;
 }
 
@@ -405,7 +405,7 @@ void gui_loop(void) {
         // wait for next gui iteration
         while (!timeout_timed_out()) {
             // do some processing instead of wasting cpu cycles
-            frsky_handle_telemetry();
+            // frsky_handle_telemetry();
         }
 
         // prepare next timeout:
@@ -463,7 +463,7 @@ static void gui_render_rssi(uint8_t rssi_rx, uint8_t rssi_tx) {
 
     // show RSSI
     uint8_t rssi, rssi_telemetry;
-    frsky_get_rssi(&rssi, &rssi_telemetry);
+    // frsky_get_rssi(&rssi, &rssi_telemetry);
 
     screen_put_uint8(x, 1, 0, rssi_telemetry);
     x += (GUI_STATUSBAR_FONT[FONT_FIXED_WIDTH]+1) * 3;
@@ -820,17 +820,18 @@ static void gui_setup_clonetx_render(void) {
     switch (gui_config_counter) {
         default:
         case (0) :
-            frsky_do_clone_prepare();
+            // frsky_do_clone_prepare();
             gui_config_counter++;
             break;
 
         case (1) :
-            frsky_autotune_prepare();
+            // frsky_autotune_prepare();
             gui_config_counter++;
             break;
 
         case (2) :
             // do autotune loop until done
+                    /*
             while (!frsky_autotune_do()) {
                 // screen_fill(0); console_render(); screen_update();
                 if (io_powerbutton_pressed()) {
@@ -840,20 +841,22 @@ static void gui_setup_clonetx_render(void) {
                     return;
                 }
             }
+            */
             gui_config_counter++;
             break;
 
         case (3) :
-            frsky_autotune_finish();
+            // frsky_autotune_finish();
             gui_config_counter++;
             break;
 
         case (4) :
-            frsky_fetch_txid_and_hoptable_prepare();
+            // frsky_fetch_txid_and_hoptable_prepare();
             gui_config_counter++;
             break;
 
         case (5) :
+                /*
             while (!frsky_fetch_txid_and_hoptable_do()) {
                 // screen_fill(0); console_render(); screen_update();
                 if (io_powerbutton_pressed()) {
@@ -863,17 +866,18 @@ static void gui_setup_clonetx_render(void) {
                     return;
                 }
             }
+            */
             gui_config_counter++;
             break;
 
         case (6) :
             screen_update();
-            frsky_fetch_txid_and_hoptable_finish();
+            // frsky_fetch_txid_and_hoptable_finish();
             gui_config_counter++;
             break;
 
         case (7) :
-            frsky_do_clone_finish();
+            // frsky_do_clone_finish();
             gui_config_counter++;
             break;
 
@@ -896,7 +900,7 @@ static void gui_setup_bindmode_render(void) {
     screen_puts_xy(3, 9 + 7*h, 1, "Switch off TX to leave...");
 
     if (gui_config_counter == 0) {
-        frsky_enter_bindmode();
+        // frsky_enter_bindmode();
     }
     gui_config_counter++;
 

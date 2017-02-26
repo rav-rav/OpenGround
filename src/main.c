@@ -32,11 +32,12 @@
 #include "sound.h"
 #include "touch.h"
 #include "cc2500.h"
-#include "frsky.h"
+//#include "frsky.h"
 #include "storage.h"
 #include "wdt.h"
 #include "gui.h"
 #include "eeprom.h"
+#include "multi4in1.h"
 
 int main(void) {
     config_init();
@@ -51,19 +52,21 @@ int main(void) {
     screen_init();
     console_init();
     debug_init();
+
     adc_init();
     sound_init();
     touch_init();
     eeprom_init();
     storage_init();
-    frsky_init();
+    //frsky_init();
 
     // screen_test();
     // touch_test();
     // adc_test();
     gui_init();
 
-    debug("main: init done.\n"); debug_flush();
+    multi4in1_init();
+    //debug("main: init done.\n"); debug_flush();
     // frsky_main();
 
     gui_loop();
