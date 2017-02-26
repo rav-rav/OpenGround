@@ -50,19 +50,19 @@ void multi4in1_init_usart(void) {
     // Turn on USART1
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
     // Turn on IO Port C
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
 
     // Configure USART3 rx tx as push-pull
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    GPIO_Init(GPIOD, &GPIO_InitStructure);
 
     //enable alternate function 1: usart
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource4, GPIO_AF_1);
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource5, GPIO_AF_1);
+    GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_0);
+    GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_0);
 
     //set baudrate
     USART_StructInit(&USART_InitStructure);
