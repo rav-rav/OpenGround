@@ -843,6 +843,8 @@ static void gui_setup_bootloader_render(void) {
     screen_puts_xy(3, 9, 1, "WILL ENTER BOOTLOADER NOW!");
     screen_update();
 
+    __disable_irq();
+
     // Our STM32 F072 has:
     // 16k SRAM in address 0x2000 0000 - 0x2000 3FFF
     *((uint32_t *)0x20003FF0) = 0xDEADBEEF;
