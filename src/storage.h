@@ -41,6 +41,16 @@ static void storage_read(uint8_t *storage_ptr, uint16_t len);*/
 static uint8_t  storage_is_valid(void);
 static uint16_t storage_calc_crc(void);
 
+// 4in1 description
+typedef struct {
+    uint8_t protocol;
+    uint8_t sub_protocol;
+    uint8_t rx_num;
+    int8_t option;
+    uint8_t auto_bind;
+    uint8_t low_power;
+} MULTI_4IN1_DESC;
+
 // model description
 typedef struct {
     // name of the model
@@ -49,6 +59,7 @@ typedef struct {
     uint16_t timer;
     // scale
     uint8_t stick_scale;
+    MULTI_4IN1_DESC multi_4in1_settings;
     // add further data here...
 } MODEL_DESC;
 

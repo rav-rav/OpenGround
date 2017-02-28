@@ -52,6 +52,13 @@ typedef struct {
     f_ptr_t callback;
 } touch_callback_entry_t;
 
+typedef struct {
+    int8_t *data;
+    int8_t min;
+    int8_t max;
+    int8_t step;
+} option_int8_t;
+
 #define GUI_TOUCH_CALLBACK_COUNT 10
 static void gui_touch_callback_register(uint8_t xs, uint8_t xe, uint8_t ys, uint8_t ye, f_ptr_t cb);
 static void gui_touch_callback_clear(void);
@@ -71,11 +78,19 @@ static void gui_touch_callback_clear(void);
 #define GUI_PAGE_CONFIG_MAIN            (GUI_PAGE_CONFIG_FLAG | 0)
 #define GUI_PAGE_CONFIG_STICK_CAL       (GUI_PAGE_CONFIG_FLAG | 1)
 #define GUI_PAGE_CONFIG_MODEL_SETTINGS  (GUI_PAGE_CONFIG_FLAG | 2)
+#define GUI_PAGE_CONFIG_4IN1_SETTINGS   (GUI_PAGE_CONFIG_FLAG | 3)
 
 
 #define GUI_SUBPAGE_SETTING_MODEL_NAME  0
 #define GUI_SUBPAGE_SETTING_MODEL_SCALE 1
 #define GUI_SUBPAGE_SETTING_MODEL_TIMER 2
+
+#define GUI_SUBPAGE_SETTING_4IN1_PROTOCOL 0
+#define GUI_SUBPAGE_SETTING_4IN1_SUB_PROTOCOL 1
+#define GUI_SUBPAGE_SETTING_4IN1_RX_NUM 2
+#define GUI_SUBPAGE_SETTING_4IN1_OPTION 3
+#define GUI_SUBPAGE_SETTING_4IN1_AUTOBIND 4
+#define GUI_SUBPAGE_SETTING_4IN1_LOW_POWER 5
 
 void gui_init(void);
 void gui_loop(void);
@@ -127,6 +142,7 @@ static void gui_cb_setup_exit(void);
 
 static void gui_config_main_render(void);
 static void gui_config_model_render(void);
+static void gui_config_4in1_render(void);
 
 static void gui_setup_clonetx_render(void);
 static void gui_setup_bindmode_render(void);

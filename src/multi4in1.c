@@ -1,5 +1,5 @@
 /*
- Copyright 2016 fishpepper <AT> gmail.com
+ Copyright 2016 rav <AT> raav.info
 
  This program is free software: you can redistribute it and/ or modify
  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http:// www.gnu.org/ licenses/>.
 
- author: fishpepper <AT> gmail.com
+ author: rav <AT> raav.info
  */
 
 #include "main.h"
@@ -24,9 +24,14 @@
 #include "multi4in1.h"
 #include "debug.h"
 #include "config.h"
+#include "adc.h"
+#include "storage.h"
 
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_usart.h"
+
+#define MULTI_CHANS 16
+#define MULTI_CHAN_BITS 11
 
 static inline int constrain(int amt, int low, int high) {
     if (amt < low)
@@ -36,6 +41,9 @@ static inline int constrain(int amt, int low, int high) {
     else
         return amt;
 }
+
+static uint8_t multi4in1_bind = 0;
+static uint8_t multi4in1_range_check = 0;
 
 void multi4in1_init(void) {
     debug("multi4in1: init usart\n");
@@ -132,7 +140,7 @@ void TIM3_IRQHandler(void) {
     if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 
-        multi_send_packet();
+        multi4in1_send_packet();
 
         TIM_SetAutoreload(TIM3, 9000 - 1);
     }
@@ -147,87 +155,62 @@ void USART_SendDataBlocking(USART_TypeDef* USARTx, uint16_t data) {
 
 // based on https://github.com/opentx/opentx/blob/next/radio/src/pulses/multi_arm.cpp
 // based on https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
-#define MULTI_CHANS 16
-#define MULTI_CHAN_BITS 11
 
-static int opti = -40;
+void multi4in1_enable_bind() {
+    multi4in1_bind = 1;
+}
 
-void multi_send_packet() {
-    uint8_t sub_protocol = 3;  // FrskyX
-    bool bind = true;
-    bool rangeCheck = false;
-    bool autoBind = false;
-
-    uint8_t rxNum = 0;
-    uint8_t type = 1;  // CH_8
-    bool lowPower = false;
-
-    uint8_t option_protocol = opti >= 0 ? opti : opti + 256;
-    opti++;
-    if (opti > 40)
-        opti = -40;
-
+void multi4in1_send_packet() {
+    MULTI_4IN1_DESC settings = storage.model[storage.current_model].multi_4in1_settings;
     uint8_t data;
 
     // header
-    debug("0: ");
-    if (sub_protocol < 32) {
+    if (settings.protocol < 32) {
         USART_SendDataBlocking(USART3, 0x55);
-        debug_put_hex8(0x55);
     } else {
         USART_SendDataBlocking(USART3, 0x54);
-        debug_put_hex8(0x54);
     }
-    debug_put_newline();
 
     // Stream[1] = sub_protocol|RangeCheckBit|AutoBindBit|BindBit;
-    data = sub_protocol & 0x1f;
-    data |= rangeCheck << 5;
-    data |= autoBind << 6;
-    data |= bind << 7;
+    data = settings.protocol & 0x1f;
+    data |= multi4in1_range_check << 5;
+    data |= settings.auto_bind << 6;
+    data |= multi4in1_bind << 7;
     USART_SendDataBlocking(USART3, data);
-    debug("1: ");
-    debug_put_hex8(data);
-    debug_put_newline();
 
     // Stream[2] = RxNum | Type | Power;
-    data = rxNum & 0x0f;
-    data |= (type & 0x07) << 4;
-    data |= lowPower << 7;
+    data = settings.rx_num & 0x0f;
+    data |= (settings.sub_protocol & 0x07) << 4;
+    data |= settings.low_power << 7;
     USART_SendDataBlocking(USART3, data);
-    debug("2: ");
-    debug_put_hex8(data);
-    debug_put_newline();
 
     // Stream[3] = option_protocol;
-    USART_SendDataBlocking(USART3, option_protocol);
-    debug("3: ");
-    debug_put_hex8(option_protocol);
-    debug_put_newline();
+    USART_SendDataBlocking(USART3, settings.option);
 
     // Stream[4] to [25] = Channels
     uint32_t bits = 0;
     uint8_t bitsavailable = 0;
 
-    int cnt = 4;
+    // fetch adc channel data
+    uint16_t adc_data[8];
+    uint32_t i;
+    for (i = 0; i < 8; i++) {
+        adc_data[i] = adc_get_channel_rescaled(i);
+    }
+    adc_process();
+
     for (int i = 0; i < MULTI_CHANS; i++) {
-        int channel = i;
-        int value = 42;
+        int value = i < 8 ? adc_data[i] : 42;
         // Scale to 80%
         value = value * 800 / 1000 + 1024;
         bits |= constrain(value, 0, 2047) << bitsavailable;
         bitsavailable += MULTI_CHAN_BITS;
         while (bitsavailable >= 8) {
             USART_SendDataBlocking(USART3, (uint8_t)(bits & 0xff));
-            cnt++;
-            if (cnt < 11) {
-                debug_put_int8(cnt);
-                debug(": ");
-                debug_put_hex8((uint8_t)(bits & 0xff));
-                debug_put_newline();
-            }
             bits >>= 8;
             bitsavailable -= 8;
         }
     }
+
+    multi4in1_bind = 0;
 }

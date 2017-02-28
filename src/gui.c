@@ -33,6 +33,7 @@
 #include "touch.h"
 #include "screen.h"
 #include "assert.h"
+#include "multi4in1.h"
 
 static uint32_t gui_config_counter;
 static uint32_t gui_shutdown_pressed;
@@ -44,6 +45,7 @@ static uint8_t gui_touch_callback_index;
 static touch_callback_entry_t gui_touch_callback[GUI_TOUCH_CALLBACK_COUNT];
 static int16_t gui_model_timer;
 static uint8_t gui_loop_counter;
+static option_int8_t option_int8;
 
 void gui_init(void) {
     debug("gui: init\n"); debug_flush();
@@ -189,6 +191,36 @@ static void gui_cb_setting_model_timer(void) {
     gui_sub_page = GUI_SUBPAGE_SETTING_MODEL_TIMER;
 }
 
+static void gui_cb_setting_4in1_protocol(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_PROTOCOL;
+}
+
+static void gui_cb_setting_4in1_sub_protocol(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_SUB_PROTOCOL;
+}
+
+static void gui_cb_setting_4in1_rx_num(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_RX_NUM;
+}
+
+static void gui_cb_setting_4in1_option(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_OPTION;
+}
+
+static void gui_cb_setting_4in1_autobind(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_AUTOBIND;
+}
+
+static void gui_cb_setting_4in1_lowpower(void) {
+    gui_page    |= GUI_PAGE_CONFIG_OPTION_FLAG;
+    gui_sub_page = GUI_SUBPAGE_SETTING_4IN1_LOW_POWER;
+}
+
 static void gui_cb_setting_option_leave(void) {
     gui_page &= ~GUI_PAGE_CONFIG_OPTION_FLAG;
 }
@@ -238,6 +270,15 @@ static void gui_cb_config_save(void) {
     gui_cb_config_back();
 }
 
+static void gui_cb_config_4in1_back(void) {
+    gui_page = GUI_PAGE_CONFIG_MODEL_SETTINGS;
+}
+
+static void gui_cb_config_4in1_save(void) {
+    storage_save();
+    gui_cb_config_4in1_back();
+}
+
 static void gui_cb_config_stick_cal(void) {
     uint32_t i, j;
 
@@ -253,6 +294,10 @@ static void gui_cb_config_stick_cal(void) {
 
 static void gui_cb_config_model(void) {
     gui_page = GUI_PAGE_CONFIG_MODEL_SETTINGS;
+}
+
+static void gui_cb_setting_model_4in1(void) {
+    gui_page = GUI_PAGE_CONFIG_4IN1_SETTINGS;
 }
 
 static void gui_cb_setup_clonetx(void) {
@@ -287,6 +332,14 @@ static void gui_cb_config_exit(void) {
 
     // back to config main menu
     gui_page = GUI_PAGE_CONFIG_MAIN;
+}
+
+static void gui_cb_config_4in1_exit(void) {
+    // restore old settings
+    storage_load();
+
+    // back to config main menu
+    gui_page = GUI_PAGE_CONFIG_MODEL_SETTINGS;
 }
 
 static void gui_cb_setup_enter(void) {
@@ -624,6 +677,11 @@ static void gui_config_render(void) {
             // model config
             gui_config_model_render();
             break;
+
+        case (GUI_PAGE_CONFIG_4IN1_SETTINGS) :
+            // model config
+            gui_config_4in1_render();
+            break;
     }
 
     screen_update();
@@ -895,6 +953,9 @@ static void gui_setup_bindmode_render(void) {
     // header
     gui_config_header_render("BIND");
     screen_puts_xy(3, 9, 1, "Sending bind packets...");
+    multi4in1_enable_bind();
+    gui_cb_setup_enter();
+    /*
     screen_puts_xy(3, 9 + 3*h, 1, "CAUTION: UNTESTED...");
 
     screen_puts_xy(3, 9 + 7*h, 1, "Switch off TX to leave...");
@@ -911,6 +972,7 @@ static void gui_setup_bindmode_render(void) {
         // next iteration
         gui_config_counter = 1;
     }
+    */
 }
 
 static void gui_config_model_render_main(void) {
@@ -944,12 +1006,107 @@ static void gui_config_model_render_main(void) {
 
     // time
     gui_add_button_smallfont(3, y, 40, 13, "TIMER", &gui_cb_setting_model_timer);
+    y += 13 + 1;
+
+    // 4in1
+    gui_add_button_smallfont(3, y, 40, 13, "4 IN 1", &gui_cb_setting_model_4in1);
 
     // render buttons and set callback
     gui_add_button_smallfont(89, 34 + 0*15, 35, 13, "SAVE", &gui_cb_config_save);
     gui_add_button_smallfont(89, 34 + 1*15, 35, 13, "BACK", &gui_cb_config_exit);
 }
 
+static void gui_config_4in1_render_main(void) {
+    const uint8_t *font = font_system5x7;
+    screen_set_font(font);
+
+    uint32_t y = 9;
+    uint32_t height = 12;
+
+    gui_add_button_smallfont(3, y, 40, height, "PROTOCOL", &gui_cb_setting_4in1_protocol);
+    y += height + 1;
+
+    gui_add_button_smallfont(3, y, 40, height, "SUB PROTO", &gui_cb_setting_4in1_sub_protocol);
+    y += height + 1;
+
+    gui_add_button_smallfont(3, y, 40, height, "RX_NUM", &gui_cb_setting_4in1_rx_num);
+    y = 9;
+
+    gui_add_button_smallfont(3+42, y, 40, height, "OPTION", &gui_cb_setting_4in1_option);
+    y += height + 1;
+
+    gui_add_button_smallfont(3+42, y, 40, height, "AUTOBIND", &gui_cb_setting_4in1_autobind);
+    y += height + 1;
+
+    gui_add_button_smallfont(3+42, y, 40, height, "LOWPOWER", &gui_cb_setting_4in1_lowpower);
+    y += height + 1;
+
+    // render buttons and set callback
+    gui_add_button_smallfont(3, 34 + 1*15, 35, height, "SAVE", &gui_cb_config_4in1_save);
+    gui_add_button_smallfont(89, 34 + 1*15, 35, height, "BACK", &gui_cb_config_4in1_exit);
+}
+
+static void gui_cb_option_int8_dec(void) {
+    if (*option_int8.data - option_int8.step >= option_int8.min) {
+        *option_int8.data -= option_int8.step;
+    } else {
+        *option_int8.data = option_int8.max;
+    }
+}
+
+static void gui_cb_option_int8_inc(void) {
+    if (*option_int8.data + option_int8.step <= option_int8.max) {
+        *option_int8.data += option_int8.step;
+    } else {
+        *option_int8.data = option_int8.min;
+    }
+}
+
+static void gui_render_option_window_int8(int8_t *opt_name, int8_t *data, int8_t min, int8_t max, int8_t step) {
+    option_int8.data = data;
+    option_int8.min = min;
+    option_int8.max = max;
+    option_int8.step = step;
+
+    // render window
+    // clear region for window
+    uint32_t window_w = LCD_WIDTH - 20;
+    uint32_t window_h = 55;
+    uint32_t y = (LCD_HEIGHT - window_h) / 2;
+    uint32_t x = (LCD_WIDTH - window_w) / 2;
+    // clear
+    screen_fill_round_rect(x, y , window_w, window_h, 4, 0);
+    // render border
+    screen_draw_round_rect(x, y, window_w, window_h, 4, 1);
+    y += 5;
+
+    // font selection
+    const uint8_t *font = font_system5x7;
+    screen_set_font(font);
+
+    // render text
+    screen_puts_centered(y, 1, opt_name);
+    y += font[FONT_HEIGHT] + 1;
+    uint32_t len = screen_strlen(opt_name);
+    screen_draw_hline((LCD_WIDTH - len) / 2, y, len, 1);
+    y += 5;
+
+    // render change modifier
+    screen_set_font(font_system5x7);
+
+    // render +/- button
+    gui_add_button(15, y, 15, 15, "-", &gui_cb_option_int8_dec);
+    gui_add_button(LCD_WIDTH - 15 - 15, y, 15, 15, "+", &gui_cb_option_int8_inc);
+
+    // render value
+    screen_put_int8(LCD_WIDTH / 2 - screen_strlen("123") / 2,
+                     y, 1, *data);
+
+    // add buttons
+    screen_set_font(font_tomthumb3x5);
+    y = LCD_HEIGHT - (LCD_HEIGHT - window_h) / 2 - 16;
+    gui_add_button_smallfont((LCD_WIDTH - 40) / 2, y, 40, 13, "OK", &gui_cb_setting_option_leave);
+}
 
 static void gui_render_option_window(uint8_t *opt_name, f_ptr_32_32_t func) {
     // render window
@@ -1043,6 +1200,49 @@ static void gui_config_model_render(void) {
     }
 }
 
+static void gui_config_4in1_render(void) {
+    // header
+    gui_config_header_render("4 IN 1 SETTINGS");
+
+    // render normal options
+    gui_config_4in1_render_main();
+
+    // single item selected?
+    if (gui_page & GUI_PAGE_CONFIG_OPTION_FLAG) {
+        // render single settings above main!
+        // but first: remove all button callbacks
+        gui_touch_callback_clear();
+
+        // which options have to be changed?
+        switch (gui_sub_page) {
+            default:
+            case (GUI_SUBPAGE_SETTING_4IN1_PROTOCOL) :
+                gui_render_option_window_int8("PROTOCOL", &storage.model[storage.current_model].multi_4in1_settings.protocol, 0, 63, 1);
+                break;
+
+            case (GUI_SUBPAGE_SETTING_4IN1_SUB_PROTOCOL) :
+                gui_render_option_window_int8("SUB_PROTOCOL", &storage.model[storage.current_model].multi_4in1_settings.sub_protocol, 0, 7, 1);
+                break;
+
+            case (GUI_SUBPAGE_SETTING_4IN1_RX_NUM) :
+                gui_render_option_window_int8("RX_NUM", &storage.model[storage.current_model].multi_4in1_settings.rx_num, 0, 15, 1);
+                break;
+
+            case (GUI_SUBPAGE_SETTING_4IN1_OPTION) :
+                gui_render_option_window_int8("OPTION", &storage.model[storage.current_model].multi_4in1_settings.option, -40, 40, 1);
+                break;
+
+            case (GUI_SUBPAGE_SETTING_4IN1_AUTOBIND) :
+                gui_render_option_window_int8("AUTOBIND", &storage.model[storage.current_model].multi_4in1_settings.auto_bind, 0, 1, 1);
+                break;
+
+            case (GUI_SUBPAGE_SETTING_4IN1_LOW_POWER) :
+                gui_render_option_window_int8("LOW_POWER", &storage.model[storage.current_model].multi_4in1_settings.low_power, 0, 1, 1);
+                break;
+
+        }
+    }
+}
 
 static void gui_config_stick_calibration_render(void) {
     uint32_t idx, i;

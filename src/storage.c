@@ -155,6 +155,12 @@ static void storage_load_defaults(void) {
         storage.model[i].name[6] = 0;
         storage.model[i].timer = 3*60;
         storage.model[i].stick_scale = 100;
+        storage.model[i].multi_4in1_settings.protocol = 0;
+        storage.model[i].multi_4in1_settings.sub_protocol = 0;
+        storage.model[i].multi_4in1_settings.rx_num = 0;
+        storage.model[i].multi_4in1_settings.option = 0;
+        storage.model[i].multi_4in1_settings.auto_bind = 0;
+        storage.model[i].multi_4in1_settings.low_power = 0;
     }
 
     // add example model
