@@ -29,6 +29,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/adc.h>
 #include <libopencm3/stm32/dma.h>
+#include <libopencm3/stm32/syscfg.h>
 
 static uint16_t adc_data[ADC_CHANNEL_COUNT];
 static uint16_t adc_battery_voltage_raw_filtered;
@@ -353,3 +354,35 @@ void adc_test(void) {
     }
 }
 
+//https://github.com/devanlai/dap42/blob/master/src/stm32f042/DFU/DFU.c
+
+/* Start of bootloader region */
+static const uint32_t BOOT_ADDR = 0x1fffC800UL;
+static inline void __set_MSP(uint32_t topOfMainStack) {
+    asm("msr msp, %0" : : "r" (topOfMainStack));
+}
+
+static void jump_to_bootloader(void) __attribute__ ((noreturn));
+
+/* Sets up and jumps to the bootloader */
+static void jump_to_bootloader(void) {
+    uint32_t boot_stack_ptr = *(uint32_t*) (BOOT_ADDR);
+    uint32_t dfu_reset_addr = *(uint32_t*) (BOOT_ADDR + 4);
+    void (*dfu_bootloader)(void) = (void (*))(dfu_reset_addr);
+    /* Remap vector table to system memory */
+    rcc_periph_clock_enable(RCC_SYSCFG_COMP);
+    SYSCFG_CFGR1 = 0x1;
+    /* Reset the stack pointer */
+    __set_MSP(boot_stack_ptr);
+    dfu_bootloader();
+    while (1)
+        ;
+}
+
+void adc_check_dfu(void) {
+    adc_process();
+    //throttle-low, yaw right, pitch down, roll left
+    if (adc_data[0] < 0x100 && adc_data[1] > 0xf00 && adc_data[2] > 0xf00 && adc_data[3] > 0xf00) {
+        jump_to_bootloader();
+    }
+}

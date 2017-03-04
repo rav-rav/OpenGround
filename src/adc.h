@@ -25,6 +25,7 @@
 
 void adc_init(void);
 void adc_test(void);
+void adc_check_dfu(void);
 
 void adc_process(void);
 

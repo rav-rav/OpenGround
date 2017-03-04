@@ -1,0 +1,12 @@
+http://diydsp.com/livesite/pages/cygwin
+cd lib/stm32/f0
+make clean
+rm*.d
+make
+
+cp ../../libopencm3_stm32f0.ld .
+
+#fix the path to the ld script in the Makefile
+#set OPENCM3_DIR to relative, not absolute
+
+LDSCRIPT = linker/stm32f072.ld

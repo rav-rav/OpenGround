@@ -53,7 +53,7 @@ STYLECHECKFLAGS	:= --no-tree -f --terse --mailback
 STYLECHECKFILES	:= $(shell find . -name '*.[ch]')
 OPT		:= -Os
 CSTD		?= -std=gnu99
-
+DFU_UTIL ?= k:\Dokumente\QuadCopter\dfu-util-0.9-win64\dfu-util.exe
 
 ###############################################################################
 # objects
@@ -236,6 +236,8 @@ libopencm3/lib/libopencm3_stm32f0.a:
 submodules:
 	@git submodule update --init -- libopencm3
 
+dfu : $(BIN_DIR)/$(TARGET).bin
+	$(DFU_UTIL) -a 0 -D $(BIN_DIR)/$(TARGET).bin -s 0x08000000:leave -R
 
 .PHONY: images clean stylecheck styleclean elf bin hex srec list submodules bin_dir obj_dir stylecheck
 

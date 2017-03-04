@@ -40,6 +40,9 @@
 #include "eeprom.h"
 
 int main(void) {
+    adc_init();
+    adc_check_dfu();
+
     clocksource_init();
     config_init();
     delay_init();
@@ -62,7 +65,7 @@ int main(void) {
 
     console_init();
     debug_init();
-    adc_init();
+    //adc_test();
     sound_init();
 
     // touch_init();
