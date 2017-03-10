@@ -26,7 +26,7 @@ ARCH_FLAGS      = -mthumb -mcpu=cortex-m0 $(FP_FLAGS)
 LDSCRIPT = linker/stm32f072.ld
 TARGET   = openground
 
-CFLAGS += -I./src -I./src/multiprotocol/Multiprotocol
+CFLAGS += -I./src -I./multiprotocol/Multiprotocol
 LDFLAGS += -L./src
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
