@@ -1,6 +1,7 @@
 ROOT         := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SOURCE_DIR   = $(ROOT)/src
 INCLUDE_DIR  = $(SOURCE_DIR)
+INCLUDE_DIR  += $(SOURCE_DIR)/multiprotocol/Multiprotocol
 #SOURCE_FILES  = led.c delay.c clocksource.c config.c io.c debug.c lcd.c timeout.c gui.c adc.c console.c screen.c storage.c font.c sound.c wdt.c frsky.c touch.c telemetry.c crc16.c cc2500.c fifo.c spi.c
 #config.c delay.c timeout.c clocksource.c led.c sound.c debug.c adc.c storage.c gui.c touch.c console.c 
 SOURCE_FILES_FOUND = $(wildcard $(SOURCE_DIR)/*.c)
@@ -25,7 +26,7 @@ ARCH_FLAGS      = -mthumb -mcpu=cortex-m0 $(FP_FLAGS)
 LDSCRIPT = linker/stm32f072.ld
 TARGET   = openground
 
-CFLAGS += -I./src
+CFLAGS += -I./src -I./src/multiprotocol/Multiprotocol
 LDFLAGS += -L./src
 
 # Be silent per default, but 'make V=1' will show all compiler calls.

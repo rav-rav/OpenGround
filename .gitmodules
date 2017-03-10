@@ -1,3 +1,6 @@
 [submodule "libopencm3"]
 	path = libopencm3
 	url = https://github.com/fishpepper/libopencm3.git
+[submodule "multiprotocol"]
+	path = multiprotocol
+	url = https://github.com/pascallanger/DIY-Multiprotocol-TX-Module
