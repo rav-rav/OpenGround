@@ -33,11 +33,12 @@
 // #include "sound.h"
 #include "touch.h"
 #include "cc2500.h"
-#include "frsky.h"
+//#include "frsky.h"
 #include "storage.h"
 #include "wdt.h"
 #include "gui.h"
 #include "eeprom.h"
+#include "multi_module.h"
 
 int main(void) {
     adc_init();
@@ -71,7 +72,7 @@ int main(void) {
     // touch_init();
     eeprom_init();
     storage_init();
-    frsky_init();
+    //frsky_init();
 
     /// screen_test();
     //touch_test();

@@ -4,7 +4,8 @@ void randomSeed(unsigned int seed);
 long map(long x, long in_min, long in_max, long out_min, long out_max);
 void stuff(void);
 
-typedef struct {} PPM_Parameters;
+typedef struct {
+} PPM_Parameters;
 #define EE_ADDR uint32_t
 
 //generated from .ino files
@@ -64,11 +65,11 @@ void LT8900_Config(uint8_t preamble_len, uint8_t trailer_len, uint8_t flags, uin
 void LT8900_SetChannel(uint8_t channel);
 void LT8900_SetTxRxMode(enum TXRX_State mode);
 void LT8900_BuildOverhead(void);
-void LT8900_SetAddress(uint8_t *address,uint8_t addr_size);
+void LT8900_SetAddress(uint8_t *address, uint8_t addr_size);
 uint8_t LT8900_ReadPayload(uint8_t* msg, uint8_t len);
 void LT8900_WritePayload(uint8_t* msg, uint8_t len);
 uint8_t convert_channel_8b(uint8_t num);
-uint8_t convert_channel_8b_scale(uint8_t num,uint8_t min,uint8_t max);
+uint8_t convert_channel_8b_scale(uint8_t num, uint8_t min, uint8_t max);
 uint8_t convert_channel_s8b(uint8_t num);
 uint16_t convert_channel_10b(uint8_t num);
 uint16_t convert_channel_frsky(uint8_t num);
@@ -145,7 +146,7 @@ uint16_t initYD717(void);
 void DSM_frame(void);
 void AFHDSA_short_frame(void);
 void frskySendStuffed(void);
-void frsky_check_telemetry(uint8_t *pkt,uint8_t len);
+void frsky_check_telemetry(uint8_t *pkt, uint8_t len);
 void init_frskyd_link_telemetry(void);
 void frsky_link_frame(void);
 void frsky_user_frame(void);
@@ -154,4 +155,74 @@ void sportIdle(void);
 void sportSendFrame(void);
 void proces_sport_data(uint8_t data);
 void TelemetryUpdate(void);
+
+//***************
+//***  Flags  ***
+//***************
+#define RX_FLAG_on          protocol_flags |= _BV(0)
+#define RX_FLAG_off         protocol_flags &= ~_BV(0)
+#define IS_RX_FLAG_on       ( ( protocol_flags & _BV(0) ) !=0 )
+//
+#define CHANGE_PROTOCOL_FLAG_on     protocol_flags |= _BV(1)
+#define CHANGE_PROTOCOL_FLAG_off    protocol_flags &= ~_BV(1)
+#define IS_CHANGE_PROTOCOL_FLAG_on  ( ( protocol_flags & _BV(1) ) !=0 )
+//
+#define POWER_FLAG_on       protocol_flags |= _BV(2)
+#define POWER_FLAG_off      protocol_flags &= ~_BV(2)
+#define IS_POWER_FLAG_on    ( ( protocol_flags & _BV(2) ) !=0 )
+//
+#define RANGE_FLAG_on       protocol_flags |= _BV(3)
+#define RANGE_FLAG_off      protocol_flags &= ~_BV(3)
+#define IS_RANGE_FLAG_on    ( ( protocol_flags & _BV(3) ) !=0 )
+//
+#define AUTOBIND_FLAG_on    protocol_flags |= _BV(4)
+#define AUTOBIND_FLAG_off   protocol_flags &= ~_BV(4)
+#define IS_AUTOBIND_FLAG_on ( ( protocol_flags & _BV(4) ) !=0 )
+//
+#define BIND_BUTTON_FLAG_on     protocol_flags |= _BV(5)
+#define BIND_BUTTON_FLAG_off    protocol_flags &= ~_BV(5)
+#define IS_BIND_BUTTON_FLAG_on  ( ( protocol_flags & _BV(5) ) !=0 )
+//PPM RX OK
+#define PPM_FLAG_off        protocol_flags &= ~_BV(6)
+#define PPM_FLAG_on         protocol_flags |= _BV(6)
+#define IS_PPM_FLAG_on      ( ( protocol_flags & _BV(6) ) !=0 )
+//Bind flag
+#define BIND_IN_PROGRESS    protocol_flags &= ~_BV(7)
+#define BIND_DONE           protocol_flags |= _BV(7)
+#define IS_BIND_DONE_on     ( ( protocol_flags & _BV(7) ) !=0 )
+//
+#define BAD_PROTO_off       protocol_flags2 &= ~_BV(0)
+#define BAD_PROTO_on        protocol_flags2 |= _BV(0)
+#define IS_BAD_PROTO_on     ( ( protocol_flags2 & _BV(0) ) !=0 )
+//
+#define RX_DONOTUPDTAE_off  protocol_flags2 &= ~_BV(1)
+#define RX_DONOTUPDTAE_on   protocol_flags2 |= _BV(1)
+#define IS_RX_DONOTUPDTAE_on    ( ( protocol_flags2 & _BV(1) ) !=0 )
+//
+#define RX_MISSED_BUFF_off  protocol_flags2 &= ~_BV(2)
+#define RX_MISSED_BUFF_on   protocol_flags2 |= _BV(2)
+#define IS_RX_MISSED_BUFF_on    ( ( protocol_flags2 & _BV(2) ) !=0 )
+//TX Pause
+#define TX_MAIN_PAUSE_off   protocol_flags2 &= ~_BV(3)
+#define TX_MAIN_PAUSE_on        protocol_flags2 |= _BV(3)
+#define IS_TX_MAIN_PAUSE_on ( ( protocol_flags2 & _BV(3) ) !=0 )
+#define TX_RX_PAUSE_off     protocol_flags2 &= ~_BV(4)
+#define TX_RX_PAUSE_on      protocol_flags2 |= _BV(4)
+#define IS_TX_RX_PAUSE_on   ( ( protocol_flags2 & _BV(4) ) !=0 )
+#define IS_TX_PAUSE_on      ( ( protocol_flags2 & (_BV(4)|_BV(3)) ) !=0 )
+//Signal OK
+#define INPUT_SIGNAL_off    protocol_flags2 &= ~_BV(5)
+#define INPUT_SIGNAL_on     protocol_flags2 |= _BV(5)
+#define IS_INPUT_SIGNAL_on  ( ( protocol_flags2 & _BV(5) ) !=0 )
+#define IS_INPUT_SIGNAL_off ( ( protocol_flags2 & _BV(5) ) ==0 )
+//Bind from channel
+#define BIND_CH_PREV_off    protocol_flags2 &= ~_BV(6)
+#define BIND_CH_PREV_on     protocol_flags2 |= _BV(6)
+#define IS_BIND_CH_PREV_on  ( ( protocol_flags2 & _BV(6) ) !=0 )
+#define IS_BIND_CH_PREV_off ( ( protocol_flags2 & _BV(6) ) ==0 )
+//Wait for bind
+#define WAIT_BIND_off       protocol_flags2 &= ~_BV(7)
+#define WAIT_BIND_on        protocol_flags2 |= _BV(7)
+#define IS_WAIT_BIND_on     ( ( protocol_flags2 & _BV(7) ) !=0 )
+#define IS_WAIT_BIND_off    ( ( protocol_flags2 & _BV(7) ) ==0 )
 
